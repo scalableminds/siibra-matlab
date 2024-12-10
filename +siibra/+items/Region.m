@@ -1,39 +1,16 @@
 classdef Region < handle
     %REGION A region is a node in the RegionTree of the parcellation.
     properties
+        Id string
         Name string
         NormalizedName string
         Parcellation (1, :) siibra.items.Parcellation
-        Spaces (1, :) siibra.items.Space
-        Parent (1, 1) % Region
-        Children (1, :) % Region
-        IsLeaf logical
     end
     methods
-        function region = Region(name, parcellation, datasetSpecs)
+        function region = Region(id, name, parcellation)
+            region.Id = id;
             region.Name = name;
             region.Parcellation = parcellation;
-            spaces = siibra.items.Space.empty;
-            % parse datasetSpecs for this region
-            if ~isempty(datasetSpecs)
-                for i = 1:numel(datasetSpecs)
-                    if iscell(datasetSpecs)
-                        specs = datasetSpecs{i};
-                    else
-                        specs = datasetSpecs(i);
-                    end
-                    if isfield(specs, "space_id")
-                        for spaceIndex = 1:numel(parcellation.Spaces)
-                             space = parcellation.Spaces(spaceIndex);
-                             if specs.space_id == space.Id
-                                spaces(end + 1) = space;
-                                
-                             end
-                        end
-                    end
-                end
-            end
-            region.Spaces = spaces;
         end
         function normalizedRegionName = get.NormalizedName(obj)
             normalizedRegionName = strrep(obj.Name, " ", "");
@@ -47,23 +24,21 @@ classdef Region < handle
         function support = doesRegionSupportSpace(obj, space)
             support = any(strcmp([obj.Spaces.Id], space.Id));
         end
-        function children = get.Children(obj)
-            children = obj.Parcellation.getChildRegions(obj.Name);
+        function children = children(obj)
+            children = obj.Parcellation.getChildRegions(obj);
         end
-        function parent = get.Parent(obj)
-            parent = obj.Parcellation.getParentRegion(obj.Name);
+        function parent = parent(obj)
+            parent = obj.Parcellation.getParentRegion(obj);
         end
-        function isLeaf = get.IsLeaf(obj)
-            isLeaf = isempty(obj.Children);
+        function isLeaf = isLeaf(obj)
+            isLeaf = isempty(obj.children);
         end
-        function mask = getMask(obj, spaceName)
-            space = obj.matchAgainstSpacesParcellationSupports(spaceName);
+        function mask = getMask(obj, space)
             mask = siibra.items.maps.LabelledRegionMap(obj, space);
         end
 
-        function map = continuousMap(obj, spaceName)
-            space = obj.matchAgainstSpacesParcellationSupports(spaceName);
-            if obj.IsLeaf
+        function map = continuousMap(obj, space)
+            if obj.isLeaf
                 map = siibra.items.maps.ContinuousRegionMap(obj, space);
             else
                 error("continuous maps are supported on leafs only!");
@@ -102,16 +77,16 @@ classdef Region < handle
 
         end
 
-        function visualizeInTemplate(obj, spaceName, colormap_name)
+        function visualizeInTemplate(obj, space, colormap_name)
             arguments
                 obj
-                spaceName string
+                space siibra.items.Space
                 colormap_name string = "jet"
             end
 
-            space = obj.matchAgainstSpacesParcellationSupports(spaceName);
+            
             template = space.loadTemplateResampledForParcellation(obj.Parcellation).normalizedData();
-            continuousMap = obj.continuousMap(spaceName).fetch().loadData();
+            continuousMap = obj.continuousMap(space).fetch().loadData();
 
             fig = uifigure;
             g = uigridlayout(fig, [2, 2]);
