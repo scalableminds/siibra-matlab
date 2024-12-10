@@ -68,8 +68,8 @@ classdef Parcellation < handle
             region = obj.RegionTree.Nodes.Region(index);
         end
         function region = getRegion(obj, regionNameQuery)
-            nodeId = obj.RegionTree.findnode(regionNameQuery);
-            region = obj.RegionTree.Nodes.Region(nodeId);
+            nodeIndex = find(obj.RegionTree.Nodes.RegionName == regionNameQuery);
+            region = obj.RegionTree.Nodes.Region(nodeIndex);
         end
         function children = getChildRegions(obj, region)
             nodeId = obj.RegionTree.findnode(region.Id);
@@ -102,35 +102,4 @@ classdef Parcellation < handle
         end
     end
     
-
-    methods (Static)
-        function tree = createParcellationTree(parcellation, regions)
-            root.name = parcellation.Name;
-            root.children = regions;
-            [source, target, region] = siibra.items.Parcellation.traverseTree(parcellation, root, string.empty, string.empty, siibra.items.Region.empty);
-            % append root node
-            nodes = target;
-            nodes(length(nodes) + 1) = root.name;
-            region(length(region) + 1) = siibra.items.Region(root.name, parcellation, []);
-            % make nodes unique
-            [uniqueNodes, uniqueIndices, ~] = unique(nodes);
-            nodeTable = table(uniqueNodes.', region(uniqueIndices).', 'VariableNames', ["Name", "Region"]);
-            tree = digraph(source, target, zeros(length(target), 1),  nodeTable);
-        end
-
-        function [source, target, regions] = traverseTree(parcellation, root, source, target, regions)
-            % Parses the parcellation tree.
-            % Recursively calls itself to parse the children of the current
-            % root.
-            % Creates a region for each node in the parcellation tree.
-
-            for childNum = 1:numel(root.children)
-                child = root.children(childNum);
-                source(length(source) + 1) = root.name;
-                target(length(target) + 1) = child.name;
-                regions(length(regions) + 1) = siibra.items.Region(child.name, parcellation, child.x_dataset_specs);
-                [source, target, regions] = siibra.items.Parcellation.traverseTree(parcellation, child, source, target, regions);
-            end
-        end
-    end
 end
