@@ -21,9 +21,6 @@ classdef Region < handle
             spaceIndex = siibra.internal.fuzzyMatching(spaceName, spaceNames);
             space = obj.Parcellation.Spaces(spaceIndex);
         end
-        function support = doesRegionSupportSpace(obj, space)
-            support = any(strcmp([obj.Spaces.Id], space.Id));
-        end
         function children = children(obj)
             children = obj.Parcellation.getChildRegions(obj);
         end
