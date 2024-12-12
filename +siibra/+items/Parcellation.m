@@ -85,6 +85,7 @@ classdef Parcellation < handle
         end
 
         function features = getAllFeatures(obj)
+            error("API v3 has no features on parcellation level!");
             cached_file_name = siibra.internal.cache(obj.Name + ".mat", "parcellation_features");
             if ~isfile(cached_file_name)
                 features = siibra.internal.API.featuresForParcellation(obj.Atlas.Id, obj.Id);

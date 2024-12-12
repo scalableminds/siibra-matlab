@@ -7,7 +7,6 @@ classdef ReceptorDensity
         Id string
         Description string
         Name string
-        DOI string
         Fingerprint string
         Unit string
     end
@@ -15,19 +14,16 @@ classdef ReceptorDensity
     methods
         function obj = ReceptorDensity(region, receptorJson)
             obj.Region = region;
-            obj.Id = receptorJson.x_id;
-            obj.Description = receptorJson.metadata.description;
-            obj.Name = receptorJson.metadata.fullName;
-            obj.DOI = "https://doi.org/" + receptorJson.urls.doi;
+            obj.Id = receptorJson.id;
+            obj.Description = receptorJson.description;
+            obj.Name = receptorJson.name;
             obj.Unit = "fmol/mg";
         end
         
         function fingerprints = get.Fingerprint(obj)
             fingerprintJson = siibra.internal.API.doWebreadWithLongTimeout( ...
-                siibra.internal.API.regionFeature( ...
-                obj.Region.Parcellation.Atlas.Id, ...
-                obj.Region.Parcellation.Id, ...
-                obj.Region.Name, ...
+                siibra.internal.API.tabularFeature( ...
+                obj.Region, ...
                 obj.Id));
             fingerprintStruct = fingerprintJson.data.fingerprints;
             receptors = fieldnames(fingerprintStruct);

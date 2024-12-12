@@ -45,11 +45,7 @@ classdef Region < handle
         function features = getAllFeatures(obj)
             cached_file_name = siibra.internal.cache(obj.NormalizedName + ".mat", "region_features");
             if ~isfile(cached_file_name)
-                features = siibra.internal.API.doWebreadWithLongTimeout( ...
-                    siibra.internal.API.featuresForRegion( ...
-                    obj.Parcellation.Atlas.Id, ...
-                    obj.Parcellation.Id, ...
-                    obj.Name));
+                features = siibra.internal.API.featuresForRegion(obj);
                 
                 % make sure to always return a cell array
                 if ~iscell(features)
@@ -64,7 +60,8 @@ classdef Region < handle
 
         function receptorDensities = getReceptorDensities(obj)
             allFeatures = obj.getAllFeatures();
-            receptorIdx = cellfun(@(e) strcmp(e.x_type,'siibra/features/receptor'), allFeatures);
+            featureTypes = cellfun(@(e) e.x_type, allFeatures, "UniformOutput",false);
+            receptorIdx = strcmp(featureTypes, "siibra-0.4/feature/tabular/receptor_density_fp");
             if ~any(receptorIdx)
                 receptorDensities = siibra.items.features.ReceptorDensity.empty;
                 return
