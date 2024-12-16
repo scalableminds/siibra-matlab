@@ -34,6 +34,7 @@ classdef API
                     options);
             catch Exception
                 delete(path)
+                throw(Exception) 
             end
         end
 
