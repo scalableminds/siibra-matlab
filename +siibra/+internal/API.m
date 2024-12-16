@@ -5,7 +5,6 @@ classdef API
         %Endpoint = "https://siibra-api-stable.apps.hbp.eu/v1_0/"
         %EndpointV2 = "https://siibra-api-stable.apps.hbp.eu/v2_0"
         EndpointV3 = "https://siibra-api-stable.apps.hbp.eu/v3_0/"
-        %EndpointV3 = "https://siibra-api-prod.apps.tc.humanbrainproject.eu/v3_0/"
     end
 
     methods (Static)
@@ -136,6 +135,31 @@ classdef API
                             "&region_id=" + region.Name;
             absoluteLink = siibra.internal.API.absoluteLinkV3(relativeLink);
         end
+        function features = regionalConnectivity(parcellation, type)
+            relativeLink = "feature/RegionalConnectivity";
+            absoluteLink = siibra.internal.API.absoluteLinkV3(relativeLink);
+            parameters = ["parcellation_id=" + parcellation.Id, "type=" + type];
+            features = siibra.internal.API.collectItemsAcrossPages(absoluteLink, parameters);
+        end
+        function absoluteLink = streamlineCountsForSubject(streamlineCounts, subject)
+            relativeLink = "feature/RegionalConnectivity/" + streamlineCounts.FeatureId + ...
+                "?parcellation_id=" + streamlineCounts.Parcellation.Id + ...
+                "&type=StreamlineCounts";
+            
+            if ~isempty(subject)
+                relativeLink = relativeLink + "&subject=" + subject;
+            end
+                
+            absoluteLink = siibra.internal.API.absoluteLinkV3(relativeLink);
+        end
+
+        function downloadFeature(path, featureId)
+            relativeLink = "feature/" + featureId + "/download";
+            absoluteLink = siibra.internal.API.absoluteLinkV3(relativeLink);
+            siibra.internal.API.doWebsaveWithLongTimeout(path, absoluteLink);
+        end
+
+
     end
     
 end

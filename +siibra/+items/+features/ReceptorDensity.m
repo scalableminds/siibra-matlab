@@ -25,11 +25,10 @@ classdef ReceptorDensity
                 siibra.internal.API.tabularFeature( ...
                 obj.Region, ...
                 obj.Id));
-            fingerprintStruct = fingerprintJson.data.fingerprints;
-            receptors = fieldnames(fingerprintStruct);
-            means = arrayfun(@(i) fingerprintStruct.(receptors{i}).mean, 1:numel(receptors));
-            stds = arrayfun(@(i) fingerprintStruct.(receptors{i}).std, 1:numel(receptors));
-            fingerprints = table(means.', stds.', 'VariableNames', ["Mean", "Std"], 'RowNames', receptors);
+            data = fingerprintJson.data.data;
+            column_names = fingerprintJson.data.columns;
+            row_names = fingerprintJson.data.index;
+            fingerprints = array2table(data, 'VariableNames', column_names, 'RowNames', row_names );
         end
     end
 end
